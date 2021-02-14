@@ -3,7 +3,7 @@ from vk_api.longpoll import VkLongPoll
 import requests
 import telebot
 import configparser
-
+from colorama import Fore, Style
 
 
 class ROOT:
@@ -14,6 +14,7 @@ class ROOT:
         self.password = self.config['Vk']['Password']
         self.token1 = self.config['Vk']['Token']
         self.token2 = self.config['Telegram']['Token']
+        print('Author Telegram: ', Fore.GREEN + '@th3end0f3v4ng3l10n',Style.RESET_ALL)
 
     def auth(self):
         vk_session = vk_api.VkApi(self.login, self.password)
