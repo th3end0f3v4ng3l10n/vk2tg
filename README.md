@@ -32,6 +32,6 @@ https://api.vk.com/oauth­/token?grant_type=password​&client_id=2274003​&cli
 <h1> Запуск <h1>
     python3 run.py
 
+------
 
-
-Author: @th3end0f3v4ng3l10n
+<h3>Author: @th3end0f3v4ng3l10n</h3>
