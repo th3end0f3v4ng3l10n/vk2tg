@@ -1,4 +1,0 @@
-vk_api
-requests
-configparser
-colorama
