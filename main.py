@@ -5,6 +5,8 @@ import os
 import sys
 import configparser
 
+
+
 def fprint(text,color):
     """Log Function"""
     if color == "red":
@@ -30,6 +32,7 @@ class Other:
         fprint(my_message2, "yellow")
 
     def parse_config(self):
+        global login, password, vk_token, tg_token
         """Config Grabber"""
         config = configparser.ConfigParser()
         config.read('config.ini')
@@ -40,7 +43,7 @@ class Other:
 
         tg_token = config['Telegram']['Tg_Token']
         fprint("Read data from config.ini...", "yellow")
-        return login, password, vk_token, tg_token
+        
 
 
 
@@ -53,7 +56,11 @@ class Get_message:
     def __init__(self):
         pass
 
+def test():
+    print(login, password, vk_token, tg_token)
+
 
 if __name__ == "__main__":
     root = Other()
-    root.start_message()
+    root.parse_config()
+    test()
