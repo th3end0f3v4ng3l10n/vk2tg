@@ -45,9 +45,11 @@ class Other:
         tg_token = config['Telegram']['Tg_Token']
 
 class Message():
-    def send_sticker(self,link):
+    def get_sticker(self,link):
         print('https://vk.com/sticker/1-'+str(link)+'-352b')
-        #print('sticker!')
+        sticker_link = 'https://vk.com/sticker/1-'+str(link)+'-352b'
+        os.system('wget -P ./packs '+ sticker_link)
+
 
 
 class WorkWithVkApi:
@@ -73,23 +75,23 @@ class WorkWithVkApi:
         user_id = self.data['updates'][0][3]
         username = requests.get('https://api.vk.com/method/users.get?access_token='+str(vk_token)+'&user_ids='+str(user_id)+'&v=5.21')
         name = username.json()
-  
-    
-        if name['response'][0]['first_name'] != "DELETED":
-            print(Fore.GREEN + name['response'][0]['first_name'], name['response'][0]['last_name'], ":",Style.RESET_ALL, self.data['updates'][0][5] )
-
-        """CHECK ON STICKER"""
         try:
             if self.data['updates'][0][7]['attach1_type'] == 'sticker':
                 username = name['response'][0]['first_name'] + name['response'][0]['last_name']
                 link = self.data['updates'][0][7]['attach1']
-                Work.send_sticker(link)
+                print('stick')
+                Work.get_sticker(link)
         except:
-            pass
+            if name['response'][0]['first_name'] != "DELETED":
+                print(Fore.GREEN + name['response'][0]['first_name'], name['response'][0]['last_name'], ":",Style.RESET_ALL, self.data['updates'][0][5])
+
+
+        
+
 
 class Send_to_Telegram:
-    def __init__(self):
-        pass
+    def send_message(self):
+        requests.post('https://api.telegram.org/bot'+str(self.token2)+'/sendMessage?chat_id=728156139&text={}'.format(message_formatted))
 
 if __name__ == "__main__":
     root = Other()
