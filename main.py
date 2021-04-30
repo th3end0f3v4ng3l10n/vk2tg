@@ -44,6 +44,11 @@ class Other:
 
         tg_token = config['Telegram']['Tg_Token']
 
+class Message():
+    def send_sticker(self,link):
+        print('https://vk.com/sticker/1-'+str(link)+'-352b')
+        #print('sticker!')
+
 
 class WorkWithVkApi:
     def get_parametrs(self):
@@ -61,14 +66,26 @@ class WorkWithVkApi:
     def get_messages(self):
 
         """Get Messages From vk"""
+        Work = Message()
         response = requests.get('https://im.vk.com/n'+str(server)+'?act=a_check&key='+str(key)+'&wait=25&mode=2&ts='+str(ts)+'&version=3')
         self.data = response.json()
+ 
         user_id = self.data['updates'][0][3]
         username = requests.get('https://api.vk.com/method/users.get?access_token='+str(vk_token)+'&user_ids='+str(user_id)+'&v=5.21')
         name = username.json()
+  
+    
         if name['response'][0]['first_name'] != "DELETED":
             print(Fore.GREEN + name['response'][0]['first_name'], name['response'][0]['last_name'], ":",Style.RESET_ALL, self.data['updates'][0][5] )
 
+        """CHECK ON STICKER"""
+        try:
+            if self.data['updates'][0][7]['attach1_type'] == 'sticker':
+                username = name['response'][0]['first_name'] + name['response'][0]['last_name']
+                link = self.data['updates'][0][7]['attach1']
+                Work.send_sticker(link)
+        except:
+            pass
 
 class Send_to_Telegram:
     def __init__(self):
