@@ -6,7 +6,7 @@ import sys
 import configparser
 import requests
 import json
-
+import telebot
 def fprint(text,color):
     """Log Function"""
     if color == "red":
@@ -33,7 +33,7 @@ class Other:
         fprint(my_message2, "yellow")
 
     def parse_config(self):
-        global login, password, vk_token, tg_token
+        global login, password, vk_token, tg_token, chat_id
         """Config Grabber"""
         config = configparser.ConfigParser()
         config.read('config.ini')
@@ -43,13 +43,37 @@ class Other:
         vk_token = config['Vk']['Vk_Token']
 
         tg_token = config['Telegram']['Tg_Token']
+        chat_id = config['Telegram']['Chat_id']
+
+class Send_to_Telegram:
+    def send_message(self, message):
+        string = 'https://api.telegram.org/bot'+str(tg_token)+'/sendMessage?chat_id='+str(chat_id)+'&text=' + str(message)
+        requests.post(string)
+
+    def send_sticker(self, username, stickername):
+        make_string = 'curl -s -X POST "https://api.telegram.org/bot'
+        make_string += tg_token
+        make_string += '/sendPhoto?chat_id='
+        make_string += chat_id
+        make_string += '" -F photo="@./packs/'
+        make_string += stickername
+        make_string += '"'
+        make_string += " -F caption='"
+        make_string += username
+        make_string += ":'"
+        os.system(make_string)
+        os.system("rm -rf ./packs/*")
+        
+
 
 class Message():
-    def get_sticker(self,link):
-        print('https://vk.com/sticker/1-'+str(link)+'-352b')
+    def get_sticker(self,username,link):
+        print(Fore.GREEN + username, ":",Style.RESET_ALL,'https://vk.com/sticker/1-'+str(link)+'-352b')
         sticker_link = 'https://vk.com/sticker/1-'+str(link)+'-352b'
-        os.system('wget -P ./packs '+ sticker_link)
-
+        sticker_name = '1-' + str(link) + '-352b'
+        os.system('wget -P ./packs/ '+ sticker_link)
+        StT = Send_to_Telegram()
+        StT.send_sticker(username, sticker_name)
 
 
 class WorkWithVkApi:
@@ -66,9 +90,10 @@ class WorkWithVkApi:
         #print("server:",server);print("key:",key);print("ts:",ts) 
 
     def get_messages(self):
-
         """Get Messages From vk"""
         Work = Message()
+        Telega = Send_to_Telegram()
+
         response = requests.get('https://im.vk.com/n'+str(server)+'?act=a_check&key='+str(key)+'&wait=25&mode=2&ts='+str(ts)+'&version=3')
         self.data = response.json()
  
@@ -77,21 +102,21 @@ class WorkWithVkApi:
         name = username.json()
         try:
             if self.data['updates'][0][7]['attach1_type'] == 'sticker':
-                username = name['response'][0]['first_name'] + name['response'][0]['last_name']
+                username = name['response'][0]['first_name']
+                username += " "
+                username += name['response'][0]['last_name']
+                print(username)
                 link = self.data['updates'][0][7]['attach1']
                 print('stick')
-                Work.get_sticker(link)
+                Work.get_sticker(username,link)
         except:
             if name['response'][0]['first_name'] != "DELETED":
                 print(Fore.GREEN + name['response'][0]['first_name'], name['response'][0]['last_name'], ":",Style.RESET_ALL, self.data['updates'][0][5])
+                message = name['response'][0]['first_name'] + ' ' + name['response'][0]['last_name'] + ': ' + self.data['updates'][0][5]
+                Telega.send_message(message)
 
 
-        
 
-
-class Send_to_Telegram:
-    def send_message(self):
-        requests.post('https://api.telegram.org/bot'+str(self.token2)+'/sendMessage?chat_id=728156139&text={}'.format(message_formatted))
 
 if __name__ == "__main__":
     root = Other()
