@@ -1,0 +1,6 @@
+colorama
+configparser
+requests
+json
+telebot
+ast
