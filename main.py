@@ -7,6 +7,9 @@ import configparser
 import requests
 import json
 import telebot
+import ast
+global msgs
+msgs = []
 def fprint(text,color):
     """Log Function"""
     if color == "red":
@@ -15,6 +18,7 @@ def fprint(text,color):
         print(Fore.YELLOW + " [LOG]", Style.RESET_ALL, "==>", text, Style.RESET_ALL)
     elif color == "green":
         print(Fore.GREEN + " [LOG]", Style.RESET_ALL, "==>", text, Style.RESET_ALL)
+
 
 class Other:
     def start_message(self):
@@ -44,10 +48,12 @@ class Other:
 
         tg_token = config['Telegram']['Tg_Token']
         chat_id = config['Telegram']['Chat_id']
+ 
+
 
 class Send_to_Telegram:
     def send_message(self, message):
-        string = 'https://api.telegram.org/bot'+str(tg_token)+'/sendMessage?chat_id='+str(chat_id)+'&text=' + str(message)
+        string = 'https://api.telegram.org/bot'+str(tg_token)+'/sendMessage?chat_id='+str(chat_id)+'&text=' + str(message) + "&parse_mode=markdown"
         requests.post(string)
 
     def send_sticker(self, username, stickername):
@@ -58,13 +64,29 @@ class Send_to_Telegram:
         make_string += '" -F photo="@./packs/'
         make_string += stickername
         make_string += '"'
-        make_string += " -F caption='"
+        make_string += " -F caption='*"
         make_string += username
-        make_string += ":'"
+        make_string += "*:'"
+        make_string += " -F parse_mode=markdown"
+        print(make_string)
         os.system(make_string)
         os.system("rm -rf ./packs/*")
         
-
+    def send_audio(self,username, audio_name):
+        print('work!')
+        make_string = 'curl -s -X POST "https://api.telegram.org/bot'
+        print('----------',make_string)
+        make_string += tg_token
+        make_string += "/sendAudio?chat_id="
+        make_string += chat_id
+        make_string += "&audio="
+        make_string += audio_name
+        make_string += '"'
+        username = "New audio message from " + username
+        print(make_string)
+        self.send_message(username) 
+        os.system(make_string)
+        os.system('rm -rf ./audio/*')
 
 class Message():
     def get_sticker(self,username,link):
@@ -75,6 +97,25 @@ class Message():
         StT = Send_to_Telegram()
         StT.send_sticker(username, sticker_name)
 
+    def get_audio(self,username, audio_name):
+        global msgs
+        print(username, ":", audio_name[0])
+        os.system('wget -P ./audio/ '+ audio_name[0])
+        StT = Send_to_Telegram()
+        print("=======================================================")
+        print("=======================================================")
+        StT.send_audio(username, audio_name[0])
+
+def proccess(username,msg):
+    global msgs
+    Msg = Message()
+    array = ast.literal_eval(msg)
+    msg = array[0]['audio_message']['link_mp3']
+    if msg not in msgs:
+        msgs.append(msg)
+        #print(msgs)
+        Msg.get_audio(username, msgs[-1:])
+    
 
 class WorkWithVkApi:
     def get_parametrs(self):
@@ -100,6 +141,8 @@ class WorkWithVkApi:
         user_id = self.data['updates'][0][3]
         username = requests.get('https://api.vk.com/method/users.get?access_token='+str(vk_token)+'&user_ids='+str(user_id)+'&v=5.21')
         name = username.json()
+        #print(self.data['updates'][0][7]['attach1_kind'])
+        
         try:
             if self.data['updates'][0][7]['attach1_type'] == 'sticker':
                 username = name['response'][0]['first_name']
@@ -107,13 +150,24 @@ class WorkWithVkApi:
                 username += name['response'][0]['last_name']
                 print(username)
                 link = self.data['updates'][0][7]['attach1']
-                print('stick')
+                #print('stick')
                 Work.get_sticker(username,link)
+
+            elif self.data['updates'][0][7]['attach1_kind'] == 'audiomsg':
+                username = "*" + name['response'][0]['first_name']
+                username += " "
+                username += name['response'][0]['last_name']+":*"
+                msg = self.data['updates'][0][7]['attachments']
+                proccess(username,msg)
+
+                
+
         except:
             if name['response'][0]['first_name'] != "DELETED":
                 print(Fore.GREEN + name['response'][0]['first_name'], name['response'][0]['last_name'], ":",Style.RESET_ALL, self.data['updates'][0][5])
-                message = name['response'][0]['first_name'] + ' ' + name['response'][0]['last_name'] + ': ' + self.data['updates'][0][5]
+                message = "*" + name['response'][0]['first_name'] + ' ' + name['response'][0]['last_name'] +"*" +': ' + self.data['updates'][0][5]
                 Telega.send_message(message)
+
 
 
 
