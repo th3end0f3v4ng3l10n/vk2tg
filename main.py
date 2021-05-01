@@ -20,22 +20,26 @@ def fprint(text,color):
         print(Fore.GREEN + " [LOG]", Style.RESET_ALL, "==>", text, Style.RESET_ALL)
 
 
-class Other:
-    def start_message(self):
-        """Simple Hello World Programm"""
-        my_message = "<=== Welcome to VK2TG ===>"
-        my_message2 = "Author Telegram: @th3end0f3v4ng3l10n"
-        my_string = ""
 
+def start_message():
+    """Simple Hello World Programm"""
+    my_message = "<========= Welcome to VK2TG =========>"
+    my_message2 = "Author Telegram: @th3end0f3v4ng3l10n"
+    my_string = ""
+
+    os.system("clear")
+    for i in my_message:
+        my_string += i
+        print(my_string)
+        sleep(0.077)
         os.system("clear")
-        for i in my_message:
-            my_string += i
-            print(my_string)
-            sleep(0.15)
-            os.system("clear")
-        print(my_message)
-        fprint(my_message2, "yellow")
 
+    print(my_message)
+    print(my_message2)
+    print("<====================================>")
+    print('')
+    
+class Other:
     def parse_config(self):
         global login, password, vk_token, tg_token, chat_id
         """Config Grabber"""
@@ -73,6 +77,7 @@ class Send_to_Telegram:
         os.system("rm -rf ./packs/*")
         
     def send_audio(self,username, audio_name):
+        global msgs
         print('work!')
         make_string = 'curl -s -X POST "https://api.telegram.org/bot'
         print('----------',make_string)
@@ -87,6 +92,7 @@ class Send_to_Telegram:
         self.send_message(username) 
         os.system(make_string)
         os.system('rm -rf ./audio/*')
+        msgs = []
 
 class Message():
     def get_sticker(self,username,link):
@@ -113,7 +119,6 @@ def proccess(username,msg):
     msg = array[0]['audio_message']['link_mp3']
     if msg not in msgs:
         msgs.append(msg)
-        #print(msgs)
         Msg.get_audio(username, msgs[-1:])
     
 
@@ -141,7 +146,6 @@ class WorkWithVkApi:
         user_id = self.data['updates'][0][3]
         username = requests.get('https://api.vk.com/method/users.get?access_token='+str(vk_token)+'&user_ids='+str(user_id)+'&v=5.21')
         name = username.json()
-        #print(self.data['updates'][0][7]['attach1_kind'])
         
         try:
             if self.data['updates'][0][7]['attach1_type'] == 'sticker':
@@ -160,8 +164,6 @@ class WorkWithVkApi:
                 msg = self.data['updates'][0][7]['attachments']
                 proccess(username,msg)
 
-                
-
         except:
             if name['response'][0]['first_name'] != "DELETED":
                 print(Fore.GREEN + name['response'][0]['first_name'], name['response'][0]['last_name'], ":",Style.RESET_ALL, self.data['updates'][0][5])
@@ -173,10 +175,15 @@ class WorkWithVkApi:
 
 
 if __name__ == "__main__":
+    
     root = Other()
+    start_message()
+    sleep(1)
+
     #!-------------------------------------------------
     try:
         fprint("Parsing config.ini...", "yellow")
+        sleep(1)
         root.parse_config() #Parsing COnfig File
         fprint("All OK", "green")
     except:
@@ -185,6 +192,8 @@ if __name__ == "__main__":
     #----------------------------------------------------
     try:
         fprint("Connecting to vk api...", "yellow")
+        sleep(1)
+        fprint("All OK", "green")
         bb = WorkWithVkApi()
     except:
         pass
